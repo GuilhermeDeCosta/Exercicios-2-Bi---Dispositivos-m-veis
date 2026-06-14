@@ -27,24 +27,29 @@ export default function App() {
       
 
 
-      <FlatList 
-        data={arrayDados}
-        renderItem={({ item }) => {
-          return (
-            <View style={styles.itemList}>
-              <Text> {item.id} - {item.name}</Text>
-              <Text> {item.email}</Text>
-              <Text>{item.phone}</Text>
-            </View>
-          );
-        }}
-        keyExtractor={(item) => item.id} 
-        ListEmptyComponent={
+      { isLoading ? (
+        <ActivityIndicator/>
+      ) : (
+        <FlatList 
+          data={arrayDados}
+          renderItem={({item}) => {
+            return (
+              <View style={styles.itemList}>
+                <Text> {item.id} - {item.name}</Text>
+                <Text> {item.email}</Text>
+                <Text>{item.phone}</Text>
+              </View>
+            )
+          }}
+          keyExtractor={(item) => item.id}
+
+          ListEmptyComponent={
           <View style={{ padding: 20, alignItems: 'center' }}>
             <Text style={{ fontSize: 16, color: 'gray' }}>Nenhum usuário encontrado.</Text>
           </View>
         }
-      />
+        
+        />
       )}
     </View>
   );
