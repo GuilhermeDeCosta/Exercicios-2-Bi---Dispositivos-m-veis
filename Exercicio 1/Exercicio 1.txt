@@ -1,0 +1,130 @@
+import { StyleSheet, Text, View, FlatList, ActivityIndicator } from 'react-native';
+import {useState, useEffect} from 'react'
+import axios from 'axios'
+
+export default function App() {
+  const [isLoading, setIsloading] = useState(false)
+  const [arrayDados, setArrayDados] = useState([])
+
+  useEffect(() => {
+    buscarUsuarios()
+  }, [])
+
+  async function buscarUsuarios() {
+    setIsloading(true)
+    try {
+      const resultado = await axios.get('https://6a2ec814c9776ca6c0c4ef8f.mockapi.io/users')
+      setArrayDados(resultado.data)
+    } catch (error) {
+      console.log(error)
+      alert("Não foi encontrado dados")
+    }
+    setIsloading(false)
+  }
+  
+  return (
+    <View style={styles.container}>
+      
+
+
+      <FlatList 
+        data={arrayDados}
+        renderItem={({ item }) => {
+          return (
+            <View style={styles.itemList}>
+              <Text> {item.id} - {item.name}</Text>
+              <Text> {item.email}</Text>
+              <Text>{item.phone}</Text>
+            </View>
+          );
+        }}
+        keyExtractor={(item) => item.id} 
+        ListEmptyComponent={
+          <View style={{ padding: 20, alignItems: 'center' }}>
+            <Text style={{ fontSize: 16, color: 'gray' }}>Nenhum usuário encontrado.</Text>
+          </View>
+        }
+      />
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  separador: {
+    marginVertical: 20,
+    borderTopWidth: 1,
+    marginHorizontal: 10,
+    borderColor: '#c4c4c4',
+  },
+  itemList: {
+    paddingVertical: 10,
+    borderBottomWidth: 0.5,
+    borderColor: '#e0e0e0',
+  },
+  input: {
+    backgroundColor: '#f2f2f2',
+    padding: 10,
+    marginBottom: 10,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)', 
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 25,
+    width: '85%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  modalInput: {
+    backgroundColor: '#f2f2f2',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#d9d9d9',
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+  },
+  button: {
+    borderRadius: 5,
+    padding: 10,
+    elevation: 2,
+    width: '45%',
+  },
+  buttonClose: {
+    backgroundColor: 'red',
+  },
+  buttonSave: {
+    backgroundColor: 'green',
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
