@@ -1,0 +1,240 @@
+import { StyleSheet, Text, View, FlatList, ActivityIndicator, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import EvilIcons from '@expo/vector-icons/EvilIcons';
+import Entypo from '@expo/vector-icons/Entypo';
+
+export default function App() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDetalhes, setIsLoadingDetalhes] = useState(false);
+  const [botaoDesabilidatado, setBotaoDesabilidatado] = useState(false)
+  
+  const [arrayDados, setArrayDados] = useState([]);
+
+  const [nomeProduto, setNomeProduto] = useState('');
+  const [precoProduto, setPrecoProduto] = useState('');
+  const [descricaoProduto, setDescricaoProduto] = useState('');
+  const [categoriaProduto, setCategoriaProduto] = useState('');
+
+  const [nome, setNome] = useState('')
+  const [preco, setPreco] = useState('')
+  const [descricao, setDescricao] = useState('') 
+  const [categoria, setCategoria] = useState('')
+
+  useEffect(() => {
+    buscarProdutos();
+  }, []);
+
+  async function buscarProdutos() {
+    setIsLoading(true); // Ativa o loading só da lista
+    try {
+      const resultados = await axios.get('https://6a2ec814c9776ca6c0c4ef8f.mockapi.io/produtos');
+      setArrayDados(resultados.data);
+    } catch (error) {
+      console.log(error);
+      alert("Não há dados");
+    }
+    setIsLoading(false); // Desativa o loading da lista
+  }
+ 
+  async function buscarProdutosId(id) {
+    setIsLoadingDetalhes(true); // Ativa o loading só do quadro branco
+    try {
+      const resultados = await axios.get('https://6a2ec814c9776ca6c0c4ef8f.mockapi.io/produtos/' + id);
+
+      setNomeProduto(resultados.data.nome);
+      setPrecoProduto(resultados.data.preco);
+      setDescricaoProduto(resultados.data.descricao);
+      setCategoriaProduto(resultados.data.categoria);
+      
+    } catch(error) {
+      console.log('Erro ao buscar produto');
+    }
+      setIsLoadingDetalhes(false); // Desativa garantido, dando erro ou não
+    
+  }
+
+  function limpar() {
+    setNomeProduto('');
+    setPrecoProduto('');
+    setDescricaoProduto('');
+    setCategoriaProduto('');
+  }
+
+  async function cadastrarNovoProduto() {
+    if (
+      !nome.trim() ||
+      !preco.trim() ||
+      !descricao.trim() ||
+      !categoria.trim()
+    ) {
+      alert("Há campos faltando serem preenchidos")
+      return;
+    }
+
+    setBotaoDesabilidatado(true)
+
+    const payload = {
+      nome: nome,
+      preco: preco,
+      descricao: descricao,
+      categoria: categoria
+    }
+
+    try {
+      await axios.post('https://6a2ec814c9776ca6c0c4ef8f.mockapi.io/produtos', payload)
+
+      setNome('')
+      setPreco('')
+      setDescricao('')
+      setCategoria('')
+
+      buscarProdutos()
+
+    } catch (error) {
+      console.log(error)
+    }
+    setBotaoDesabilidatado(false)
+  }
+
+  async function deletarItem(idItem) {
+    setBotaoDesabilidatado(true)
+    try {
+      await axios.delete('https://6a2ec814c9776ca6c0c4ef8f.mockapi.io/produtos/' + idItem)
+      buscarProdutos()
+    } catch (error) {
+      console.log("Erro ao deletar item")
+    }
+    setBotaoDesabilidatado(false)
+  }
+
+  return (
+    <View style={styles.container}>
+
+      <View style={{ backgroundColor: 'purple', paddingVertical: 20, paddingHorizontal: 10 }}>
+        
+        <View style={{ backgroundColor: 'white', padding: 20, marginHorizontal: 20, marginBottom: 10, borderRadius: 15 }}>
+          
+          {isLoadingDetalhes ? (
+            <ActivityIndicator size="small" color="purple" />
+          ) : nomeProduto ? (
+            <View>
+              <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 5 }}>Nome: {nomeProduto}</Text>
+              <Text style={{ marginBottom: 5 }}>Preço: R$ {precoProduto}</Text>
+              <Text style={{ marginBottom: 5 }}>Categoria: {categoriaProduto}</Text>
+              <Text style={{ fontStyle: 'italic', color: 'grey' }}>Descrição: {descricaoProduto}</Text>
+            </View>
+          ) : (
+            <Text style={{ textAlign: 'center', color: 'grey' }}>Nenhum produto selecionado</Text>
+          )}
+
+        </View>
+
+        <TouchableOpacity 
+          onPress={limpar} 
+          style={{ backgroundColor: 'green', borderRadius: 4, padding: 10, marginHorizontal: 20, alignItems: 'center' }}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>Limpar</Text>
+        </TouchableOpacity>
+
+        <View style={{marginHorizontal:10, marginVertical: 20}}>
+          <Text style={styles.textoInput}>Nome do produto</Text>
+          <TextInput 
+            style={styles.input}
+            value={nome}
+            onChangeText={setNome}
+          />
+
+          <Text style={styles.textoInput}>Preço do produto</Text>
+          <TextInput 
+            style={styles.input}
+            value={preco}
+            onChangeText={setPreco}
+          />
+
+          <Text style={styles.textoInput}>Descrição do produto</Text>
+          <TextInput 
+            style={styles.input}
+            value={descricao}
+            onChangeText={setDescricao}
+          />
+
+          <Text style={styles.textoInput}>Categoria do produto</Text>
+          <TextInput 
+            style={styles.input}
+            value={categoria}
+            onChangeText={setCategoria}
+          />
+
+          <TouchableOpacity 
+            onPress={cadastrarNovoProduto}
+            disabled={botaoDesabilidatado}
+            style={{padding: 20, backgroundColor:'green', borderRadius:10}}>
+            <Text style={{color:'white', fontWeight: 'bold'}}>Cadastrar produto</Text>
+          </TouchableOpacity>
+        </View>
+
+
+      </View>
+
+
+
+
+      
+
+
+
+      <ScrollView style={{ flex: 1 }}>
+        <View style={{ paddingBottom: 20 }}>
+          {isLoading ? (
+            <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+          ) : (
+            <FlatList 
+              data={arrayDados}
+              renderItem={({ item }) => {
+                return (
+                  <View style={styles.lista}>
+                    <TouchableOpacity onPress={() => buscarProdutosId(item.id)}>
+                      <Text style={{ color: 'white', fontWeight: 'bold' }}>{item.id} - {item.nome}</Text>
+                    </TouchableOpacity>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <TouchableOpacity onPress={() => deletarItem(item.id)}>
+                        <EvilIcons name="trash" size={30} color="black" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              }}
+              keyExtractor={(item) => item.id}
+            />
+          )}
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginHorizontal: 8
+  },
+  lista: {
+    backgroundColor: 'green',
+    padding: 30,
+    marginVertical: 4,
+    borderRadius: 30
+  },
+  input: {
+    backgroundColor: '#f2f2f2',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 10
+  },
+  textoInput: {
+    color: 'white',
+    marginVertical:0.5,
+    fontWeight: 'bold'
+  }
+});
